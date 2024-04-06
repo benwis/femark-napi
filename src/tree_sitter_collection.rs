@@ -6,8 +6,8 @@ pub struct TreeSitterCollection {
 impl TreeSitterCollection {
     pub fn rust() -> TreeSitterCollection {
         let rust_conf = HighlightConfiguration::new(
-            tree_sitter_rust::language(),
-            tree_sitter_rust::HIGHLIGHT_QUERY,
+            tree_sitter_rstml::language_rust_with_rstml(),
+            tree_sitter_rstml::HIGHLIGHTS_QUERY,
             "",
             "",
         )
@@ -162,4 +162,3 @@ impl TreeSitterCollection {
         TreeSitterCollection { conf }
     }
 }
-
