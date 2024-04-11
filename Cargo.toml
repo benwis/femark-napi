@@ -23,7 +23,8 @@ slug = "0.1.4"
 thiserror = "1.0.40"
 toml = "0.8.10"
 tracing = "0.1.35"
-tree-sitter = "0.22"
+tree-sitter = "0.20"
+#tree-sitter = {path="../tree-sitter/lib"}
 tree-sitter-c = "0.20.1"
 tree-sitter-dockerfile = "0.1.0"
 tree-sitter-go = "0.19.1"
@@ -38,10 +39,13 @@ tree-sitter-rstml = {git="https://github.com/rayliwell/tree-sitter-rstml.git"}
 tree-sitter-toml = "0.20.0"
 tree-sitter-typescript = "0.20.1"
 wit-bindgen = {version="0.19.1", features=["realloc"]}
+wit-bindgen-rt = "0.24.0"
 
 #[profile.release]
 #lto = "thin"
-
+[patch.crates-io]
+tree-sitter = {path="../tree-sitter/lib"}
+tree-sitter-highlight = {path="../tree-sitter/highlight"}
 
 [package.metadata.component]
 package = "benwis:femark"
