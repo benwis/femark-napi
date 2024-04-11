@@ -1,13 +1,15 @@
-mod tree_sitter_collection;
-mod parser;
 mod langs;
+mod parser;
+mod tree_sitter_collection;
 
+use crate::langs::{Lang, LANGS};
+use crate::parser::{
+    generate_toc, options, process_stream, process_stream_with_frontmatter, OwnedFrontmatter, Toc,
+};
 use eyre::Result;
 use pulldown_cmark::Parser;
-use tree_sitter_highlight::{Highlight, HighlightEvent, Highlighter};
 use pulldown_cmark_frontmatter::FrontmatterExtractor;
-use crate::parser::{Toc, options, generate_toc, process_stream, process_stream_with_frontmatter, OwnedFrontmatter};
-use crate::langs::{LANGS, Lang};
+use tree_sitter_highlight::{Highlight, HighlightEvent, Highlighter};
 
 #[derive(Default)]
 #[non_exhaustive]
@@ -24,7 +26,10 @@ pub fn process_markdown_to_html(input: &str) -> Result<HTMLOutput> {
 /// Processes markdown to html and syntax highlights the code blocks.
 /// Scans for frontmatter, and parses it. A H1 in the frontmatter will be returned.
 /// while the frontmatter code block will not.
-pub fn process_markdown_to_html_with_frontmatter(input: &str, extract_frontmatter: bool) -> Result<HTMLOutput> {
+pub fn process_markdown_to_html_with_frontmatter(
+    input: &str,
+    extract_frontmatter: bool,
+) -> Result<HTMLOutput> {
     let parser = Parser::new_ext(&input, options());
     let parser2 = Parser::new_ext(&input, options());
     let langs = &LANGS;
@@ -34,8 +39,14 @@ pub fn process_markdown_to_html_with_frontmatter(input: &str, extract_frontmatte
     //   let stream = WideImages::new(parser);
     let mut frontmatter_parser = FrontmatterExtractor::new(parser);
 
-    match extract_frontmatter{
-        true => process_stream_with_frontmatter(&mut frontmatter_parser, langs, &mut toc, &mut output, &mut frontmatter),
+    match extract_frontmatter {
+        true => process_stream_with_frontmatter(
+            &mut frontmatter_parser,
+            langs,
+            &mut toc,
+            &mut output,
+            &mut frontmatter,
+        ),
         false => process_stream(parser2, langs, &mut toc, &mut output),
     };
 
@@ -131,9 +142,9 @@ fn write_code_escaped(w: &mut dyn std::fmt::Write, input: &str) -> Result<()> {
 
 #[cfg(test)]
 mod tests {
-    use serde::{Deserialize, Serialize};
     use super::*;
     use crate::HTMLOutput;
+    use serde::{Deserialize, Serialize};
 
     #[test]
     fn test_write_code_escaped() {
@@ -181,7 +192,10 @@ mod tests {
 console.log(user.name)
         ```"#;
         let HTMLOutput { content, .. } = process_markdown_to_html(input).unwrap();
-        assert_eq!(content,"<div class=\"code-block\"><div class=\"language-tag\">TypeScript code</div><pre class=\"code-block-inner\" data-lang=\"ts\">       <i class=hh4>const</i> <i class=hh15>user</i> <i class=hh5>=</i> <i class=hh8>{</i>\n  <i class=hh6>firstName</i>: <i class=hh10>\"Angela\"</i><i class=hh9>,</i>\n  <i class=hh6>lastName</i>: <i class=hh10>\"Davis\"</i><i class=hh9>,</i>\n  <i class=hh6>role</i>: <i class=hh10>\"Professor\"</i><i class=hh9>,</i>\n<i class=hh8>}</i>\n\n<i class=hh16>console</i><i class=hh9>.</i><i class=hh3>log</i><i class=hh8>(</i><i class=hh15>user</i><i class=hh9>.</i><i class=hh6>name</i><i class=hh8>)</i>\n        <i class=hh10>``</i>`</pre></div>");
+        assert_eq!(
+            content,
+            "<div class=\"code-block\"><div class=\"language-tag\">TypeScript code</div><pre class=\"code-block-inner\" data-lang=\"ts\">       <i class=hh4>const</i> <i class=hh15>user</i> <i class=hh5>=</i> <i class=hh8>{</i>\n  <i class=hh6>firstName</i>: <i class=hh10>\"Angela\"</i><i class=hh9>,</i>\n  <i class=hh6>lastName</i>: <i class=hh10>\"Davis\"</i><i class=hh9>,</i>\n  <i class=hh6>role</i>: <i class=hh10>\"Professor\"</i><i class=hh9>,</i>\n<i class=hh8>}</i>\n\n<i class=hh16>console</i><i class=hh9>.</i><i class=hh3>log</i><i class=hh8>(</i><i class=hh15>user</i><i class=hh9>.</i><i class=hh6>name</i><i class=hh8>)</i>\n        <i class=hh10>``</i>`</pre></div>"
+        );
     }
     #[test]
     fn test_frontmatter() {
@@ -192,11 +206,15 @@ console.log(user.name)
         }
         let input = include_str!("../samples/frontmatter_example.md");
 
-        let HTMLOutput { content, frontmatter, .. } = process_markdown_to_html_with_frontmatter(input, true).unwrap();
+        let HTMLOutput {
+            content,
+            frontmatter,
+            ..
+        } = process_markdown_to_html_with_frontmatter(input, true).unwrap();
 
-       let Some(frontmatter) = frontmatter else {
-        panic!("No frontmatter detected!");
-       };
+        let Some(frontmatter) = frontmatter else {
+            panic!("No frontmatter detected!");
+        };
         assert_eq!(
             frontmatter.title.expect("title not detected"),
             "Frontmatter Example Document"
@@ -209,5 +227,4 @@ console.log(user.name)
         assert_eq!(content,"\n                        <h1>\n                            <a id=\"frontmatter-example-document\" class=\"anchor\" href=\"#frontmatter-example-document\">\n                                Frontmatter Example Document\n                            </a>\n                        </h1>\n                        \n<p>This is an example document with embedded frontmatter. The\npulldown-cmark-frontmatter crate removes the frontmatter code block so that it\ndoes not show up in the final output.</p>\n"
 );
     }
-
- }
+}

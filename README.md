@@ -28,6 +28,7 @@ println!("Title: {}", frontmatter.title.unwrap());
 ## Supported Languages
 
 - Rust
+- Rsx/Rstml
 - Typescript
 - Tsx
 - Javascript
